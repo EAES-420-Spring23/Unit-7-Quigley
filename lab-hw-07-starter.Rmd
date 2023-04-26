@@ -1,8 +1,8 @@
 ---
 title: "Lab and Homework 07 - Fitting models`"
-author: "Insert your name here"
-date: "Insert date here"
-output: html_document
+author: "Louis Quigley"
+date: "03/30/23"
+output: pdf_document
 ---
 
 ### Load packages and data
@@ -16,36 +16,104 @@ library(tidymodels)
 
 ### Exercise 1
 
-Remove this text, and add your answer for Exercise 1 here.
+```{r import-data}
+fluxes <- read_csv("data/us-mms-simple.csv")
+```
+
+```{r fix-dates, eval = T}
+fluxes <- fluxes %>% 
+  mutate(date = mdy_hm(date))
+head(fluxes)
+```
 
 ### Exercise 2
 
-Remove this text, and add your answer for Exercise 2 here.
+```{r subset-fluxes, eval = T}
+fluxes_subset <- fluxes %>% 
+  filter(date > "2020-07-01" & date < "2020-07-08")
+head(fluxes_subset, 10) 
+```
 
 ### Exercise 3
 
-Remove this text, and add your answer for Exercise 3 here.
+```{r CO2_exploratory_viz}
+ggplot(fluxes_subset, aes(incoming_radiation, fco2)) +
+  geom_point() +
+  labs(
+    title = "CO2 Flux vs. Incoming Radiation",
+    x = "Incoming Radiation",
+    y = "CO2 Flux"
+  ) +
+  theme_minimal()
+```
+
 
 ### Exercise 4
 
-Remove this text, and add your answer for Exercise 4 here.
+```{r add_line}
+ggplot(fluxes_subset, aes(incoming_radiation, fco2)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(
+    title = "CO2 Flux vs. Incoming Radiation",
+    x = "Incoming Radiation",
+    y = "CO2 Flux"
+  ) +
+  theme_minimal()
+```
+The grey band shows the uncertainty of the fitted line.
 
 ### Exercise 5
 
-Remove this text, and add your answer for Exercise 5 here.
+```{r fit-a-model, eval = F}
+linear_reg() %>% 
+  set_engine("lm") %>% 
+  fit(fco2 ~ incoming_radiation, data = fluxes_subset) %>% 
+  tidy()
+```
+1. The "intercept" estimate is the value of CO2 flux when the incoming radiation equals 0.  
+2. The slope is the estimated change in CO2 flux as incoming solar radiation increases.  
+std.error is the uncertainty of estimated coefficients (and should be tested at a local healthcare facility)
 
 ### Exercise 6
 
-Remove this text, and add your answer for Exercise 6 here.
+```{r create-season, eval = T}
+fluxes <- fluxes %>% 
+    filter(date > "2020-01-01" & date < "2021-01-01") %>%  ## THIS LINE IS NEW 
+     mutate(season = ifelse(date < "2020-04-01", "winter", NA),
+            season = ifelse(date >= "2020-04-01" & date < "2020-07-01", "spring", season),
+            season = ifelse(date >= "2020-07-01" & date < "2020-10-01", "summer", season),
+            season = ifelse(date >= "2020-10-01" & date <= "2020-12-31", "fall", season)) %>% 
+     mutate(winter = ifelse(season == "winter", 1, 0))
+
+# ifelse syntax is: ifelse( logical operation, value if TRUE, value if FALSE )
+
+```
+
 
 ### Exercise 7
 
-Remove this text, and add your answer for Exercise 7 here.
+```{r fit-a-model-2, eval = T}
+linear_reg() %>% 
+  set_engine("lm") %>% 
+  fit(fco2 ~ factor(winter), data = fluxes) %>% 
+  tidy()
+```
+The estimate column shows the difference in CO2 flux when it is winter versus not winter.  
+The slope tells us by how much the CO2 flux is changing between winter and not winter.  
+There are two possible values for fCO2 because it's calculating either winter or not winter values. Exercise 6 gives us multiple dates for fCO2 values. 
 
 ### Exercise 8
 
-Remove this text, and add your answer for Exercise 8 here.
-
+```{r fit-a-model-3, eval = F}
+linear_reg() %>% 
+  set_engine("lm") %>% 
+  fit(fco2 ~ factor(season), data = fluxes) %>% 
+  tidy()
+```
+the estimate variable is exaplaining the estimated value of fCO2 by different seasons starting with the fall as the y-intercept.  
+There are four different possible values because this table models four seasons.  
+Fall is the baseline or y-intercept because it is listed first and r defaults to the first datapoint listed as the baseline.  
 ### Exercise 9
 
 Remove this text, and add your answer for Exercise 8 here.
