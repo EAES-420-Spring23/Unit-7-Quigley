@@ -153,4 +153,4 @@ glance(fco2_fit_int)$adj.r.squared
 ```
 the "$" sign specifies a specific value, such as adj.r.squared.  
 There is evidence the interaction effect improved the model, because it better takes into account the number of variables. This is shown by a higher R^2 value which means the line better conforms to the data.   
-The adjusted R^2 value adjusts for the large number of values which can increase the R^2 value. 
+The adjusted R^2 value adjusts for the large number of values which can increase the R^2 value. gj
